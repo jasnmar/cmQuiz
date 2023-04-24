@@ -9,25 +9,25 @@ startButton.addEventListener("click", startQuiz);
 function startQuiz() {
     setTime();
     buildQuiz();
-    showFirst();
+    showFirstQuestion();
     const startButton = document.getElementById("startBtn");
     startButton.classList.add("hideme");
 };
 
-function showFirst(){
-    showqDiv(0);
+function showFirstQuestion(){
+    gShowqDiv("questionDiv"+0);
 }
-// 
-function showqDiv(divtoshow){
-    const cDiv = document.getElementById("questionDiv"+divtoshow)
+//removes the hidme class from the questionDiv id passed to it
+function gShowqDiv(divtoshow){
+    const cDiv = document.getElementById(divtoshow)
     cDiv.classList.remove("hideme");
 }
-function hideqDiv(divtohide){
-    const cDiv = document.getElementById("questionDiv"+divtohide)
+function gHideqDiv(divtohide){
+    const cDiv = document.getElementById(divtohide)
     cDiv.classList.add("hideme");
 }
 
-let timeLeft = 30;
+let timeLeft = 180;
 
 timerBox.textContent = timeLeft;
 
@@ -119,39 +119,35 @@ function buttonListener(buttonId) {
 
     //if the value of possibleAnswers at the coordinates [qNumber] the question number and [aNumber] the answer number evaluate true
     //then call correctAnswer function
-    if(possibleAnswers[qNumber][aNumber]){
-        correctAnswer(qNumber);
-        //if it does not evaluate true, call incorrectAnswer function
+    dealWithAnswer(qNumber,possibleAnswers[qNumber][aNumber]);
+}
+function dealWithAnswer(qNumber, answerResult) {
+
+    const response = document.getElementById("response"); //assings the response section from HTML document to a variable
+    let responseDiv
+    if(document.getElementById("respDiv")) {
+        responseDiv = document.getElementById("respDiv");
+        gShowqDiv("response");
     } else {
-        incorrectAnswer(qNumber);
-        
+        responseDiv = document.createElement("div"); //creates a div to put the response in
     }
+
+    responseDiv.setAttribute("id","respDiv"); //sets the id of the newly created div
+    response.appendChild(responseDiv); //adds newly creaated div to response section in HTML document
+    if(answerResult) { //if answerResult true
+        responseDiv.textContent="You got the right answer!" //adds text to newly appended div - you got it right
+    } else { //if answerResult false
+        responseDiv.textContent="You got the answer wrong" //adds text to newly appended div - you got it wrong
+        penalizeUser(); //calls penalizeUser function
+    };
+    addNextButton(responseDiv, qNumber);
+    // showNextQuestion(qNumber); //calls this function with the index of the current question
 }
 
-function correctAnswer(qNumber){
-    console.log("You got it right");
-    const positiveResponse = document.getElementById("response");
-    const responseDiv = document.createElement("div");
-    responseDiv.setAttribute("id","prespDiv");
-    positiveResponse.appendChild(responseDiv);
-    responseDiv.textContent="You got the right answer!"
-    showNextQuestion(qNumber);
-    //addNextButton(responseDiv, qNumber);
-}
-function incorrectAnswer(qNumber) {
-    console.log("Sorry that's wrong");
-    const negativeResponse = document.getElementById("response");
-    const responseDiv = document.createElement("div");
-    responseDiv.setAttribute("id","nrespDiv");
-    negativeResponse.appendChild(responseDiv);
-    responseDiv.textContent="You got the answer wrong"
-    showNextQuestion(qNumber)
-    //addNextButton(responseDiv, qNumber);
-    penalizeUser();
-}
 function penalizeUser(){
-    timeLeft = timeLeft - 20;
+    timeLeft = timeLeft - 20; //subtracts 20 seconds from the countdown timer
 }
+
 function addNextButton(divToAdd, qNumber) {
     const nxtButton = document.createElement("BUTTON");
     nxtButton.setAttribute("id","question"+qNumber)
@@ -160,11 +156,12 @@ function addNextButton(divToAdd, qNumber) {
     nxtButton.addEventListener("click", function() {showNextQuestion(qNumber)});
     divToAdd.appendChild(nxtButton);
 }
+
 function showNextQuestion(cQuestionIndex){
     console.log("Show the next question now");
-    const respSection = document.getElementById("response");
-    respSection.textContent="";
-    hideqDiv(cQuestionIndex);
+    const respSection = document.getElementById("response"); //selects the div with ID response in HTML document and assigns it to a variable
+    gHideqDiv("response");
+    gHideqDiv("questionDiv"+ cQuestionIndex);
 
     //if the current question index is less than the length of questions -1, call showqDiv function, which displays the next question
     //if it is not less than, that means there are no more questions to display, call endQuiz function
@@ -172,7 +169,7 @@ function showNextQuestion(cQuestionIndex){
     if(cQuestionIndex<questions.length-1) {
         //calling showDiv and passing it a number. This number is the current index + 1 i.e. the next question's index.
         //eval() forces javascript to treat cQuestionIndex as a number.
-        showqDiv(eval(cQuestionIndex)+1);
+        gShowqDiv("questionDiv"+(eval(cQuestionIndex)+1));
     } else {
     
         endQuiz();
@@ -215,11 +212,17 @@ function getInitials(inputBox, userscore){
     const initials = inputBox.value;
     console.log("initials are : "+ initials);
     let scoreList = JSON.parse(localStorage.getItem("initials"));
+
     let scorepair = { 
         user: initials,
         score: userscore
     }
-    scoreList.push(scorepair);
+    if(!scoreList) {
+        scoreList = [scorepair];
+    } else {
+        scoreList.push(scorepair);
+    }
+    
     console.log(scorepair);
     localStorage.setItem("initials",JSON.stringify(scoreList));
     const initialsSection = document.getElementById("enterScore");

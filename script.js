@@ -17,7 +17,7 @@ function startQuiz() {
 function showFirst(){
     showqDiv(0);
 }
-//
+// 
 function showqDiv(divtoshow){
     const cDiv = document.getElementById("questionDiv"+divtoshow)
     cDiv.classList.remove("hideme");

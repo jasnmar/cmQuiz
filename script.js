@@ -3,35 +3,64 @@ const startButton = document.getElementById("startBtn");
 const timerBox = document.getElementById("timer");
 let quizActive = true;
 
-const scoreSection = document.getElementById("scores-section");
+
 const viewScoresBtn = document.getElementById('toggle-scores');
 viewScoresBtn.addEventListener("click", toggleScores);
 startButton.addEventListener("click", startQuiz);
-scoreSection.innerHTML = "";
 
 function toggleScores(e){
-    console.log(e);
-    console.log(scoreSection.textContent.includes("Scores:"))
+    const scoreSection = document.getElementById("scores-section");
     const storedScores = JSON.parse(localStorage.getItem("initials"));
-    if(scoreSection.textContent.includes("Scores:")){
-        console.log(true);
-        scoreSection.textContent = "";
+    const introText = document.createElement("h2");
+    scoreSection.appendChild(introText);
+    if(!storedScores) {
+        introText.innerHTML = "No High Scores Yet";
     } else {
-        console.log(false);
-        scoreSection.textContent = "Scores:";
-        for (ii=0;ii<storedScores.length;ii++) {
-            const scoreEntry = document.createElement("li");
-            scoreEntry.setAttribute("id","se"+ii);
-            let user = JSON.stringify(storedScores[ii].user);
-            user = user.slice(1,-1);
-            scoreEntry.textContent = user
-            + " : " + JSON.stringify(storedScores[ii].score);
-            scoreSection.appendChild(scoreEntry);
+
+        if(scoreSection.textContent.includes("Scores")){
+            console.log(true);
+            scoreSection.textContent = "";
+        } else {
             
+
+            introText.innerHTML = "Scores";
+
+            const scoreTable = document.createElement("table");
+            scoreTable.classList.add("table");
+            const sTableHead = document.createElement("thead");
+            const sTHRow = document.createElement("tr");
+            const sTH1 = document.createElement("th");
+            sTH1.setAttribute("scope","col");
+            sTH1.textContent = "Name";
+            const sTH2 = document.createElement("th");
+            sTH2.setAttribute("scopre","col");
+            sTH2.textContent = "Score";
+            scoreTable.appendChild(sTableHead);
+            sTableHead.appendChild(sTHRow);
+            sTHRow.appendChild(sTH1);
+            sTHRow.appendChild(sTH2);
+            const stBody = document.createElement("tbody");
+            scoreTable.appendChild(stBody);
+
+
+            scoreSection.appendChild(scoreTable);
+            for (ii=0;ii<storedScores.length;ii++) {
+                const scoreRow = document.createElement("tr");
+                const scoreTh = document.createElement("th");
+                scoreTh.setAttribute("scope","row");
+                const scoreNameCell = document.createElement("td");
+                scoreNameCell.textContent = storedScores[ii].user;
+                const scoreScoreCell = document.createElement("td");
+                scoreScoreCell.textContent = storedScores[ii].score;
+                stBody.appendChild(scoreTh);
+                stBody.appendChild(scoreRow);
+                scoreRow.appendChild(scoreNameCell);
+                scoreRow.appendChild(scoreScoreCell);
+
+            }
             
         }
-        
-    }
+}
 }
 
 
@@ -39,8 +68,12 @@ function startQuiz() {
     setTime();
     buildQuiz();
     showFirst();
+    const qSection = document.getElementById("questionSection");
+    qSection.classList.remove("hideme");
     const startButton = document.getElementById("startBtn");
     startButton.classList.add("hideme");
+    const timerDiv = document.getElementById("timer");
+    timerDiv.classList.remove("hideme");
 };
 
 function showFirst(){
@@ -72,16 +105,7 @@ function setTime() {
         }
     }, 1000);
 };
-// const questions = [
-//     "Which of the following key words is used to define variables in JavaScript?",
-//     "What does a JavaScript loop do?.",
-//     "What values does the Boolean data type take?",
-//     "What does DOM stand for?",
-//     "What is JavaScript used for in programming?",
-//     "What are examples of JavaScript Popup boxes?",
-//     "Who invented JavaScript?",
-//     "What is a JavaScript function?"
-// ];
+
 const questionsObject = [ 
     { 
         question: "Which of the following key words is used to define variables in JavaScript?",
@@ -127,16 +151,6 @@ const questionsObject = [
 function buildQuiz() {
     const showQuestion = document.getElementById("questionSection");
 
-    // const possibleAnswers = [
-    //     ["a. const", "b. let", "c. both a and b", "d. none of the above"],
-    //     ["a. Runs the same code over and over again", "b. Goes back to the top of the page and runs the nearest function", "c. Adds two integers together", "d. Returns a random number between 1 and 100"],
-    //     ["a. Yes and No", "b. True and False", "c. Up and Down", "d. Left and Right"],
-    //     ["a. Direct Object Method", "b. Data Object Model", "c. Define Object Map", "d. Document Object Model"],
-    //     ["a. to define the content of web pages", "b. to specify the layout of web pages", "c. to program the behavior of web pages", "d. to organize code within a web page"],
-    //     ["a. alert, prompt, and confirm", "b. yes, no, and cancel", "c. present, past, and future", "d. display, hide, and rename"],
-    //     ["a. Michael Linloffin", "b. Barry Velma", "c. Lauren Gilligan", "d. Brendan Eich"],
-    //     ["a. a predetermined variable within a JavaScript page", "b. an event that occurs inside of JavaScript, but is not displayed on screen", "c. a block of JavaScript code that can be executed when 'called' for", "d. the link between JavaScript, HTML, and CSS"]
-    // ]
     for (questionNumber=0;questionNumber<questionsObject.length;questionNumber++) {
         console.log(questionsObject[questionNumber].question);
         const qDiv = document.createElement("div");
@@ -145,39 +159,41 @@ function buildQuiz() {
         qDiv.setAttribute("id","questionDiv"+questionNumber);
         qDiv.setAttribute("data-questionNumber", questionNumber);
         qDiv.textContent = questionsObject[questionNumber].question;
+        const br = document.createElement("br");
+        qDiv.appendChild(br);
         for(answerNumber=0;answerNumber<questionsObject[questionNumber].answers.length;answerNumber++) {
+
             const aBtn = document.createElement("BUTTON");
             qDiv.appendChild(aBtn);
             aBtn.setAttribute("id","answerButton"+questionNumber+answerNumber);
             aBtn.setAttribute("data-questionNumber",questionNumber);
             aBtn.setAttribute("data-answerNumber",answerNumber);
+            aBtn.classList.add("btn");
+            aBtn.classList.add("btn-primary");
+            aBtn.classList.add("bmargin");
             aBtn.textContent=questionsObject[questionNumber].answers[answerNumber];
-            aBtn.addEventListener("click", function() {buttonListener(aBtn.id)})
+            aBtn.addEventListener("click", function() {buttonListener(aBtn)})
+            const nbsp = document.createTextNode("\u00A0");
+            qDiv.appendChild(nbsp);
         }
 
     }
 };
 
-function buttonListener(buttonId) {
-    console.log(buttonId);
-    const possibleAnswers = [
-        [0, 0, 1, 0],
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 0, 1],
-        [0, 0, 1, 0],
-        [1, 0, 0, 0],
-        [0, 0, 0, 1],
-        [0, 0, 1, 0],
-    ]
-    const btnLenght = buttonId.length;
-    const qNumber = buttonId.substr(btnLenght-2,1);
-    const aNumber = buttonId.substr(btnLenght-1,1);
+function buttonListener(button) {
+
+    const qNumber = button.getAttribute("data-questionNumber");
+    const aNumber = button.getAttribute("data-answerNumber");
     console.log("question: " +qNumber);
     console.log("answer: "+aNumber);
 
-    console.log(possibleAnswers[1][1]);
-    if(possibleAnswers[qNumber][aNumber]){
+    const buttonId = button.getAttribute("id");
+
+    const btnLenght = buttonId.length;
+
+
+    const cAnswer = questionsObject[qNumber].correctIndex;
+    if(cAnswer == aNumber){
         correctAnswer(qNumber);
         
     } else {
@@ -204,7 +220,6 @@ function incorrectAnswer(qNumber) {
     negativeResponse.appendChild(responseDiv);
     responseDiv.textContent="You got the answer wrong"
     showNextQuestion(qNumber)
-    //addNextButton(responseDiv, qNumber);
     penalizeUser();
 }
 function penalizeUser(){
@@ -253,13 +268,20 @@ function afterScreen(score) {
     const scoreText = document.createElement("div");
     scoreText.textContent = "Your score was "+score;
     scoreSection.appendChild(scoreText);
+    const inputDiv = document.createElement("div");
+    inputDiv.classList.add("input-group");
+    scoreSection.appendChild(inputDiv);
     const myInputBox = document.createElement("input");
-    myInputBox.placeholder = "Type your initials";
-    scoreSection.appendChild(myInputBox);
+    myInputBox.type="text";
+    myInputBox.classList.add("form-control");
+    myInputBox.placeholder = "Your initials";
+    inputDiv.appendChild(myInputBox);
     const submitButton = document.createElement("button");
     submitButton.textContent = "Submit";
+    submitButton.classList.add("btn");
+    submitButton.classList.add("btn-primary");
     
-    scoreSection.appendChild(submitButton);
+    inputDiv.appendChild(submitButton);
     submitButton.addEventListener("click", function() {getInitials(myInputBox, score)});
 
 }
@@ -271,11 +293,36 @@ function getInitials(inputBox, userscore){
         user: initials,
         score: userscore
     }
+    if(!scoreList){
+        scoreList = [];
+    } 
     scoreList.push(scorepair);
-    console.log(scorepair);
+    scoreList.sort(customSort);
+    scoreList = top10(scoreList);
+    console.log(scoreList);
     localStorage.setItem("initials",JSON.stringify(scoreList));
     const initialsSection = document.getElementById("enterScore");
     initialsSection.classList.add("hideme");
+    startButton.classList.remove("hideme");
+}
+
+function top10(localArray) {
+    for(i=0;i<localArray.length-9;i++) {
+        localArray.pop();
+    };
+    return localArray;
 
 }
+function customSort(a, b) {
+    console.log("a: "+a.score+" b: "+b.score)
+
+    if (a.score<b.score) {
+      return 1;
+    }
+    if (a.score>b.score) {
+      return -1;
+    }
+    // a must be equal to b
+    return 0;
+  }
 
